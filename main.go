@@ -26,6 +26,11 @@ func main() {
 	// Since not using mutex remember to never write to this map again after init
 	staticFiles := staticFilesToMap(*staticDir)
 
+	log.Println("Found routes:")
+	for key := range staticFiles {
+		log.Println(key)
+	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {

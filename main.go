@@ -124,10 +124,11 @@ func staticFilesToMap(directory string) files {
 }
 
 func serveStatic(f files, w http.ResponseWriter, r *http.Request) {
-	sendStatic := func(key string, value *fileInMap) {
+	sendStatic := func(value *fileInMap) {
+
 		w.Header().Add("Content-Type", value.contentType)
 		w.Header().Add("Content-Length", strconv.Itoa(len(value.content)))
-		w.Header().Add("Etag", key)
+		w.Header().Add("Etag", r.URL.Path)
 		w.Header().Set("Cache-Control", "max-age=120")
 		w.WriteHeader(http.StatusOK)
 		w.Write(value.content)
@@ -145,16 +146,16 @@ func serveStatic(f files, w http.ResponseWriter, r *http.Request) {
 				if !ok {
 					sendNotFound(w)
 				} else {
-					sendStatic(r.URL.Path, &value)
+					sendStatic(&value)
 				}
 			} else {
 				sendNotFound(w)
 			}
 
 		} else {
-			sendStatic(r.URL.Path, &value)
+			sendStatic(&value)
 		}
 	} else {
-		sendStatic(r.URL.Path, &value)
+		sendStatic(&value)
 	}
 }

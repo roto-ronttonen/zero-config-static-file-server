@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"io/fs"
 	"io/ioutil"
 	"log"
@@ -135,7 +137,7 @@ func serveStatic(f files, w http.ResponseWriter, r *http.Request) {
 	sendStatic := func(value *fileInMap) {
 
 		w.Header().Add("Content-Type", value.contentType)
-		w.Header().Add("Content-Length", strconv.Itoa(len(value.content)))
+
 		if !*noCache {
 			if value.contentType != "text/html" &&
 				value.contentType != "text/plain" &&
@@ -147,8 +149,22 @@ func serveStatic(f files, w http.ResponseWriter, r *http.Request) {
 
 		}
 
+		// Gzip data
+		var b bytes.Buffer
+		gz := gzip.NewWriter(&b)
+		if _, err := gz.Write(value.content); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if err := gz.Close(); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		content := b.Bytes()
+		w.Header().Add("Content-Encoding", "gzip")
+		w.Header().Add("Content-Length", strconv.Itoa(len(content)))
 		w.WriteHeader(http.StatusOK)
-		w.Write(value.content)
+		w.Write(content)
 	}
 	value, ok := f[r.URL.Path]
 	if !ok {

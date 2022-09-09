@@ -42,7 +42,7 @@ func main() {
 		AllowedHeaders: []string{"*"},
 	})
 	handler := c.Handler(mux)
-	addr := "localhost:8888"
+	addr := ":8888"
 	log.Printf("Listening on %s", addr)
 	log.Fatal(http.ListenAndServe(addr, handler))
 }

@@ -87,7 +87,7 @@ func staticFilesToMap(directory string) files {
 				case "md":
 					contentType = "text/markdown"
 				case "svg":
-					contentType = "image/svg"
+					contentType = "image/svg+xml"
 				}
 			}
 

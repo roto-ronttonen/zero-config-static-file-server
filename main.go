@@ -16,6 +16,7 @@ import (
 
 var (
 	staticDir = kingpin.Arg("directory", "Directory to serve").Required().String()
+	noCache   = kingpin.Flag("no-cache", "Remove cache control").Bool()
 )
 
 func main() {
@@ -135,8 +136,17 @@ func serveStatic(f files, w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Add("Content-Type", value.contentType)
 		w.Header().Add("Content-Length", strconv.Itoa(len(value.content)))
-		w.Header().Add("Etag", r.URL.Path)
-		w.Header().Set("Cache-Control", "max-age=120")
+		if !*noCache {
+			if value.contentType != "text/html" &&
+				value.contentType != "text/plain" &&
+				value.contentType != "text/markdown" &&
+				!strings.HasSuffix(r.URL.Path, "favicon.ico") {
+				w.Header().Add("Etag", r.URL.Path)
+				w.Header().Set("Cache-Control", "max-age=31536000")
+			}
+
+		}
+
 		w.WriteHeader(http.StatusOK)
 		w.Write(value.content)
 	}
